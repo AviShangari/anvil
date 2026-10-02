@@ -1,8 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-def get_current_time():
-    toronto = datetime.now(ZoneInfo("America/Toronto"))
+def get_current_time(city: str):
+    toronto = datetime.now(ZoneInfo(city))
 
     # Time first, then date
     formatted = toronto.strftime("%I:%M:%S %p  |  %Y-%m-%d")
