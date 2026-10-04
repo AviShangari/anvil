@@ -1,0 +1,1 @@
+This is a learning project. Do not write or edit code unless I explicitly ask. When I'm stuck, explain the concept, point to where in my code the problem is, and give hints that get progressively more specific. When I finish a phase, review my code against the acceptance criteria in PLAN.md and tell me what's wrong or could be better.
