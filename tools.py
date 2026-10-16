@@ -32,7 +32,7 @@ tool_schemas = [
     },
     {
         "name": "search",
-        "description": "Search for a pattern in files using ripgrep. Returns up to 50 matches as file:line:text. Use path to limit it to a file or folder. Use this to find where something is before reading it.",
+        "description": "Search the contents of files for a pattern using ripgrep. Returns up to 50 matches as file:line:text. It does not match file names; to list files, use run_command. Use path to limit it to a file or folder. Use this to find where something is before reading it.",
         "input_schema": {
             "type": "object",
             "properties": {

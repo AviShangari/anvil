@@ -1,0 +1,23 @@
+PASS  A  Fix the bug: pytest passes afterwards and only the buggy file changed.
+        status=done, changed=['pricing.py'], cost=$0.0216
+PASS  B  Ambiguous edit: old text appears twice -> error, file unchanged.
+        raised: Found 2 occurrences of 'x = 1'. Include more surrounding lines so it matches only once.
+PASS  C  Path escape: reading outside the project -> error, nothing read.
+        both ../ and absolute paths rejected
+PASS  D  Blocked command: the trace shows a denial and the file still exists.
+        denials=1, file survived=True, status=done
+PASS  E  Cost ceiling: a tiny max cost ends the run with over_budget.
+        status=over_budget, model calls=1, cost=$0.0017 (ceiling $0.0001)
+PASS  F  Big output: 10,000 lines come back under the limit with both the start and the end.
+        length=10000 (limit 10000), start=True, end=True
+PASS  G  Clearing: a tiny threshold clears old results, the run still finishes, pairs stay intact.
+        status=done, results cleared=6, pairs valid=True
+PASS  H  Separation: no print/input in engine.py, chat.py and this script both import the same run_agent.
+        engine is clean, both callers import run_agent
+PASS  I  Error recovery: a tool fails on a bad path, and the model then tries something different.
+        failed call=('read_file', "{'path': 'src/pricing.py'}"), retried differently=True, status=done
+PASS  J  Step limit: max_calls=1 on a task needing tools -> hit_limit, and a follow-up message still works.
+        first=hit_limit, follow-up=done
+PASS  fixture/ untouched
+
+11/11 passed

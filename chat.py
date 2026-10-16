@@ -7,6 +7,7 @@ from engine import run_agent
 from tools import tool_schemas, build_registry
 
 MAX_CALLS = 20
+MAX_COST = 0.25  # dollars per user turn
 FIXTURE_DIR = "fixture"
 
 # Matched against the lowercased, whitespace-collapsed command. Never complete: that's why commands also ask for confirmation.
@@ -20,15 +21,24 @@ NEEDS_CONFIRMATION = ["edit_file", "run_command"]
 OUTPUT_PREVIEW_CHARS = 150
 
 
+def is_blocked(command) -> bool:
+    normalized = " ".join(command.lower().split())
+    return any(re.search(pattern, normalized) for pattern in BLOCKLIST)
+
+
+def copy_fixture() -> str:
+    # every run works on a throwaway copy, never on the original fixture
+    root = tempfile.mkdtemp(prefix="anvil_")
+    shutil.copytree(FIXTURE_DIR, root, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+    return root
+
+
 def can_run(tool_name, tool_input) -> bool:
 
     if tool_name in ['read_file', 'search']: return True
 
-    if tool_name == "run_command":
-        normalized = " ".join(tool_input.get("command", "").lower().split())
-        for pattern in BLOCKLIST:
-            if re.search(pattern, normalized):
-                return False
+    if tool_name == "run_command" and is_blocked(tool_input.get("command", "")):
+        return False
 
     if tool_name in NEEDS_CONFIRMATION:
         answer = input(f"Allow {tool_name} with {tool_input}? [y/N] ")
@@ -57,10 +67,16 @@ def on_event(event_type, data):
     elif event_type == "tool_denied":
         print(f"[denied] {data['name']}")
 
-    elif event_type == "run_finished":
-        print(f"[finished] status={data['status']}, model calls={data['model_calls']}")
+    elif event_type == "cost_updated":
+        print(f"[cost] ${data['cost']:.4f} ({data['input_tokens']} in, {data['output_tokens']} out)")
 
-    # unknown event types are ignored on purpose (e.g. cost_updated arrives in Task 3)
+    elif event_type == "results_cleared":
+        print(f"[cleared] {data['cleared']} old tool results (last input was {data['input_tokens']} tokens)")
+
+    elif event_type == "run_finished":
+        print(f"[finished] status={data['status']}, model calls={data['model_calls']}, cost=${data['cost']:.4f}")
+
+    # unknown event types are ignored on purpose
 
 
 def main():
@@ -68,8 +84,7 @@ def main():
     if len(sys.argv) > 1:
         root = sys.argv[1]
     else:
-        root = tempfile.mkdtemp(prefix="anvil_")
-        shutil.copytree(FIXTURE_DIR, root, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+        root = copy_fixture()
     print(f"Working in {root}. Type 'exit' to quit.")
 
     registry = build_registry(root)
@@ -82,7 +97,7 @@ def main():
         if not user_message:
             continue
 
-        final_output, status = run_agent(context, user_message, tool_schemas, registry, can_run, on_event, MAX_CALLS)
+        final_output, status = run_agent(context, user_message, tool_schemas, registry, can_run, on_event, MAX_CALLS, MAX_COST)
         print(f"\nagent> {final_output}")
 
 

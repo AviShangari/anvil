@@ -133,8 +133,12 @@ Your agent can fix a real bug in a small project from a terminal chat, safely an
   - Part 3 DONE (`can_run` and `on_event` in `chat.py`, written by Claude at the user's request): `can_run` returns a bool (reads allowed, blocklist regexes checked on the normalized command, y/N prompt for `edit_file` and `run_command`, unknown tools denied). `on_event` prints one line per event and ignores unknown types. Not yet run or reviewed.
   - Part 4 DONE (`main()` in `chat.py`, written by Claude at the user's request): reads input, calls `run_agent` once per turn with one persistent `context`, prints the result. Works on a project path from `sys.argv[1]`, otherwise on a temp copy of `fixture/`. `MAX_CALLS = 20`. Not yet run or reviewed. `test_agent.py` is empty.
   - **Checkpoint DONE (1 manual run):** `python chat.py` with "The tests are failing. Fix it." Status `done`, 8 model calls, the agent edited `pricing.py` and pytest passed. The original `fixture/` was not touched. This is one chat run, not criterion A (needs the test script and 3 runs). Findings: `search` only searches file contents, not file names, and its description doesn't say so. The model tried it twice to find `.py` files, got "No matches", then fell back to `Get-ChildItem -Recurse`. The search hit path (a pattern that does match) was not exercised. Blocklist, denial, error recovery and the call limit were not exercised.
-- **Tasks 3, 4, 5 (cost, clearing, test script):** not started.
-- **DECISIONS.md:** empty. Owed: Phase 2 timezone reason, output size limit (500 lines), search cap (50).
+- **Tasks 3, 4, 5 (written by Claude at the user's request):**
+  - Task 3 DONE: token and dollar totals, `max_cost`, `over_budget`, and `cost_updated` event in `engine.py`. `measure_tools.py` measured the tool definitions at 1143 tokens.
+  - Task 4 DONE: `clear_old_tool_results` in `engine.py`, `results_cleared` event. Only `content` is replaced.
+  - Task 5 DONE: `test_agent.py` runs scenarios A-J (`python test_agent.py [letters]`). Ran the whole script 3 times. First batch: G failed 3/3 (`hit_limit`) because `keep_recent` counted blocks and the model reads files in parallel batches of 4; fixed by counting result messages instead. Second batch after the fix: 11/11 on all 3 runs (output in `runs/test_run_1-3.txt`; the first batch's files were overwritten, its results are recorded here). **Criteria A-J pass across 3 runs. Phase 4 is done**, pending DECISIONS.md owed items.
+  - Also changed: `search` description (contents only, not file names), non-`tool_use` stop reasons now end the turn, `is_blocked` and `copy_fixture` split out of `chat.py`.
+- **DECISIONS.md:** filled for Phase 4 except the owed items: Phase 2 timezone reason, 500-line read limit, 50-result search cap.
 
 ### Acceptance criteria
 All of these pass across 3 runs:
