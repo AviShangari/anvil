@@ -129,7 +129,8 @@ Your agent can fix a real bug in a small project from a terminal chat, safely an
   - None of the tools has been checked against acceptance criteria B, C or F yet. Tool schemas not written.
 - **Task 2 (engine split):** in progress.
   - Part 1 DONE: `tool_schemas` (four tool definitions, `input_schema`, no `root`/`timeout`/`max_results` exposed) and `build_registry(root)` (uses `functools.partial`) in `tools.py`. Not yet run against the API.
-  - Part 2 (`run_agent` in `engine.py` with callbacks), part 3 (`can_run` and `on_event` for chat), part 4 (`chat.py`): not started. `engine.py`, `chat.py` and `test_agent.py` exist but are empty.
+  - Part 2 DONE (`run_agent` in `engine.py`): steps 1-12 written and reviewed (steps 6-10 written by Claude at the user's request; 11-12 by the user). Returns `(final_output, status)`, emits `model_call`, `tool_started`, `tool_finished`, `tool_error`, `tool_denied`, `run_finished`. Not yet run against the API. Known edge cases not handled: other stop reasons (e.g. refusal) produce an empty results message; `max_tokens` cutting a `tool_use` block leaves a half-formed call.
+  - Part 3 (`can_run` and `on_event` for chat), part 4 (`chat.py`): not started. `engine.py`, `chat.py` and `test_agent.py` exist but are empty.
   - **Planned checkpoint:** after part 4, run the agent on the fixture bug end to end (this also exercises all four tools).
 - **Tasks 3, 4, 5 (cost, clearing, test script):** not started.
 - **DECISIONS.md:** empty. Owed: Phase 2 timezone reason, output size limit (500 lines), search cap (50).
